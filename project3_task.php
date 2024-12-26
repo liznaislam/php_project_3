@@ -1,5 +1,47 @@
 <?php
 define("TASKS_FILE", "tasks.json");
+function loadTasks(): array {
+    if(!file_exists(TASKS_FILE)){
+        return [];
+    }
+
+    $data = file_get_contents(TASKS_FILE);
+
+    return $data ? json_decode($data, true) : [];
+}
+$tasks = loadTasks();
+function saveTasks(array $tasks) : void {
+    file_put_contents(TASKS_FILE, json_encode($tasks, JSON_PRETTY_PRINT));
+}
+if($_SERVER['REQUEST_METHOD'] === 'POST') {
+    // TODO: Handle task addition (check if task is provided, then add it to the tasks array and save)
+    if(isset($_POST['task']) && !empty(trim($_POST['task']))){ 
+        // add a task
+        $tasks[] = [
+            'task' => htmlspecialchars(trim($_POST['task'])),
+            'done' => false
+        ];
+        saveTasks($tasks);
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }elseif(isset($_POST['delete'])){
+        // TODO: Handle task deletion (check if a delete action is requested, remove the task from the array, and save)
+        // delete a task
+        unset($tasks[$_POST['delete']]);
+        $tasks = array_values($tasks); 
+        saveTasks($tasks);
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }elseif(isset($_POST['toggle'])){
+        // TODO: Handle task completion toggle (check if toggle action is requested, update task's done status, and save)
+        // toggle task as complete
+        $tasks[$_POST['toggle']]['done'] = !$tasks[$_POST['toggle']]['done'];
+        saveTasks($tasks);
+        header('Location: ' . $_SERVER['PHP_SELF']);
+        exit;
+    }
+}
+
 ?>
 <!DOCTYPE html>
 <html lang="en">
